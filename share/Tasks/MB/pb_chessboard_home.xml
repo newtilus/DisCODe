@@ -4,18 +4,35 @@
 		<ImageSource type="CameraOpenCV" thread="ImageSourceThread" group="s1">
 		</ImageSource>
 		
-		<BGRToGray type="CvColorConv" thread="ImageSourceThread" group="s1">
+		<NewestImage type="NewestImage" thread="ProcessingThread" group="s1">
+		</NewestImage>
+		
+		<BGRToGray type="CvColorConv" thread="ProcessingThread" group="s1">
 			<type>BGR2GRAY</type>
 		</BGRToGray>
 		
-		<FindChessboard type="CvFindChessboardCorners" thread="ImageSourceThread" group="s1">
-			<width>6</width>
-			<height>9</height>
-			<squareSize>0.028</squareSize>
-			<findSubpix>1</findSubpix>
+		<FindChessboard type="CvFindChessboardCorners" thread="ProcessingThread" group="s1">
+			<chessboard>
+				<width>6</width>
+				<height>9</height>
+				<square_height>0.028</square_height>
+				<square_width>0.028</square_width>
+			</chessboard>
+			
+			<scale>1</scale>
+			<scale_factor>2</scale_factor>
+			<subpix>1</subpix>
+			<subpix_window>7</subpix_window>
+			
+			<flags>
+				<fast_check>1</fast_check>
+				<filter_quads>1</filter_quads>
+				<adaptive_treshold>1</adaptive_treshold>
+				<normalize_image>0</normalize_image>
+			</flags>
 		</FindChessboard>
 		
-		<PositionEstimator type="CvSolvePnP" thread="ImageSourceThread" group="s1">
+		<PositionEstimator type="CvSolvePnP" thread="ProcessingThread" group="s1">
 			<cameraMatrix>
 				[3,3](
 					(781.282, 0, 304.619),
@@ -30,7 +47,7 @@
 			</distCoeffs>
 		</PositionEstimator>
 		
-		<VisualServoPB type="VisualServoPB" thread="ImageSourceThread" group="s1">
+		<VisualServoPB type="VisualServoPB" thread="ProcessingThread" group="s1">
 		</VisualServoPB>
 		
 		<Mrrocpp type="Mrrocpp" thread="MrrocProxyThread" group="s1">
@@ -49,6 +66,10 @@
 			<interval>0.02</interval>
 		</ImageSourceThread>
 		
+		<ProcessingThread type="passive">
+			<main_component>NewestImage</main_component>
+		</ProcessingThread>
+		
 		<MrrocProxyThread type="continuous">
 			<main_component>Mrrocpp</main_component>
 		</MrrocProxyThread>
@@ -60,7 +81,8 @@
 	</Executors>
 
 	<Events>
-		<Event source="ImageSource.newImage" destination="BGRToGray.onNewImage"/>
+		<Event source="ImageSource.newImage" destination="NewestImage.onNewImage"/>
+		<Event source="NewestImage.newImage" destination="BGRToGray.onNewImage"/>
 		<Event source="BGRToGray.newImage" destination="FindChessboard.onNewImage"/>
 		<Event source="FindChessboard.chessboardFound" destination="PositionEstimator.onNewObject3D"/>
 		<Event source="PositionEstimator.objectLocated" destination="VisualServoPB.onObjectLocated"/>
@@ -74,8 +96,13 @@
 			<out_img type="out" group="OriginalImage"/>
 		</ImageSource>
 		
+		<NewestImage>
+			<in_img type="in" group="OriginalImage"/>
+			<out_img type="out" group="NewestImage"/>
+		</NewestImage>
+		
 		<BGRToGray>
-			<in_img  type="in" group="OriginalImage"/>
+			<in_img  type="in" group="NewestImage"/>
 			<out_img type="out" group="GrayImage"/>
 		</BGRToGray>
 		

@@ -13,8 +13,11 @@
 #include "Component_Aux.hpp"
 #include "Panel_Empty.hpp"
 #include "Objects3D/Chessboard.hpp"
+#include "ImagePosition.hpp"
 #include "Drawable.hpp"
 #include "Timer.hpp"
+
+#include "Property.hpp"
 
 
 /**
@@ -67,39 +70,11 @@
 namespace Processors {
 namespace CvFindChessboardCorners {
 
-struct CvFindChessboardCornersProps: public Base::Props
-{
-	cv::Size patternSize;
-	float squareSize;
-	bool findSubpix;
-	void load(const ptree & pt)
-	{
-		LOG(LTRACE) << "CvFindChessboardCornersProps::load()\n";
-		patternSize.width = pt.get<int>("width");
-		patternSize.height = pt.get<int>("height");
-		squareSize = pt.get<float>("squareSize");
-		findSubpix = pt.get<bool>("findSubpix");
-	}
-	void save(ptree & pt)
-	{
-		LOG(LTRACE) << "CvFindChessboardCornersProps::save()\n";
-		pt.put("width", patternSize.width);
-		pt.put("height", patternSize.height);
-		pt.put("squareSize", squareSize);
-		pt.put("findSubpix", findSubpix);
-	}
-};
-
 class CvFindChessboardCorners_Processor: public Base::Component
 {
 public:
 	CvFindChessboardCorners_Processor(const std::string & name = "");
 	virtual ~CvFindChessboardCorners_Processor();
-
-	Base::Props * getProperties()
-	{
-		return &props;
-	}
 protected:
 	/*!
 	 * Method called when component is started
@@ -130,8 +105,12 @@ protected:
 	 * \return true on success
 	 */
 	virtual bool onStep();
+
+
 private:
 	void onNewImage();
+
+	void initChessboard();
 
 	/** New image event handler. */
 	Base::EventHandler <CvFindChessboardCorners_Processor> h_onNewImage;
@@ -139,6 +118,7 @@ private:
 	Base::DataStreamIn <cv::Mat> in_img;
 	/** Chessboard stream. */
 	Base::DataStreamOut <Types::Objects3D::Chessboard> out_chessboard;
+	Base::DataStreamOut <Types::ImagePosition> out_imagePosition;
 	/** Raised when chessboard has been located on the image. */
 	Base::Event *chessboardFound;
 	/** Raised when chessboard has not been located on the image. */
@@ -151,9 +131,27 @@ private:
 
 	Common::Timer timer;
 
-	CvFindChessboardCornersProps props;
-
 	boost::shared_ptr<Types::Objects3D::Chessboard> chessboard;
+
+	cv::Mat sub_img;
+
+	Base::Property<bool> prop_subpix;
+	Base::Property<int> prop_subpix_window;
+	Base::Property<bool> prop_scale;
+	Base::Property<int> prop_scale_factor;
+	Base::Property<int> prop_width;
+	Base::Property<int> prop_height;
+	Base::Property<float> prop_square_width;
+	Base::Property<float> prop_square_height;
+
+	Base::Property<bool> prop_fastCheck;
+	Base::Property<bool> prop_filterQuads;
+	Base::Property<bool> prop_adaptiveThreshold;
+	Base::Property<bool> prop_normalizeImage;
+
+
+	void sizeCallback(int old_value, int new_value);
+	void flagsCallback(bool old_value, bool new_value);
 };
 
 } // namespace CvFindChessboardCorners {
