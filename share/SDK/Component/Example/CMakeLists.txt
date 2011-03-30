@@ -36,8 +36,8 @@ INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
 
 # Add another libraries here (for example when you need OpenCV):
 # Find OpenCV library files
-# FIND_PACKAGE( OpenCV REQUIRED )
-# SET(LIBS ${OpenCV_LIBS} ${OpenCV_LIBRARIES} ${LIBS} )
+ FIND_PACKAGE( OpenCV REQUIRED )
+ SET(LIBS ${OpenCV_LIBS} ${OpenCV_LIBRARIES} ${LIBS} )
 
 # =[ Prepare files to build ]============================================
 # Create a variable containing all .cpp files:

@@ -12,6 +12,9 @@
 #include "DataStream.hpp"
 #include "Props.hpp"
 
+#include <cv.h>
+using namespace cv;
+
 namespace Processors {
 namespace Example {
 
