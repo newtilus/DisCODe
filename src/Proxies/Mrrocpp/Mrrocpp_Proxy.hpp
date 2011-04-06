@@ -167,8 +167,8 @@ private:
 
 	Base::Event *rpcCall;
 	Base::DataStreamOut <xdr_iarchive <> > rpcParam;
-	Base::DataStreamInPtr <Types::Mrrocpp_Proxy::Reading> rpcResult;
-	Base::DataStreamIn<struct timespec> in_timestamp;
+	Base::DataStreamInPtr <Types::Mrrocpp_Proxy::Reading, Base::DataStreamBuffer::Newest, Base::Synchronization::Mutex> rpcResult;
+	Base::DataStreamIn<struct timespec, Base::DataStreamBuffer::Newest, Base::Synchronization::Mutex> in_timestamp;
 	Base::EventHandler <Mrrocpp_Proxy> h_onRpcResult;
 
 	boost::shared_ptr <xdr_iarchive <> > header_iarchive;

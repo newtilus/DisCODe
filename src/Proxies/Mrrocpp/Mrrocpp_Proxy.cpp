@@ -65,8 +65,8 @@ bool Mrrocpp_Proxy::onInit()
 
 	serverSocket.setupServerSocket(port);
 
-	readingMessage.reset();
-	rpcResultMessage.reset();
+	readingMessage = boost::shared_ptr <Types::Mrrocpp_Proxy::Reading>((Types::Mrrocpp_Proxy::Reading*)NULL);
+	rpcResultMessage = boost::shared_ptr <Types::Mrrocpp_Proxy::Reading>((Types::Mrrocpp_Proxy::Reading*)NULL);
 
 	state = MPS_LISTENING;
 
@@ -84,8 +84,8 @@ bool Mrrocpp_Proxy::onFinish()
 	LOG(LTRACE) << "Mrrocpp_Proxy::onFinish\n";
 	serverSocket.closeSocket();
 
-	readingMessage.reset();
-	rpcResultMessage.reset();
+	readingMessage = boost::shared_ptr <Types::Mrrocpp_Proxy::Reading>((Types::Mrrocpp_Proxy::Reading*)NULL);
+	rpcResultMessage = boost::shared_ptr <Types::Mrrocpp_Proxy::Reading>((Types::Mrrocpp_Proxy::Reading*)NULL);
 
 	state = MPS_NOT_INITIALIZED;
 
@@ -122,8 +122,15 @@ void Mrrocpp_Proxy::tryAcceptConnection()
 		return;
 	}
 	clientSocket = serverSocket.acceptConnection();
-	readingMessage.reset();
-	rpcResultMessage.reset();
+	{
+		mutex::scoped_lock lock(readingMutex);
+//		readingMessage = boost::shared_ptr <Types::Mrrocpp_Proxy::Reading>((Types::Mrrocpp_Proxy::Reading*)NULL);
+//		rpcResultMessage = boost::shared_ptr <Types::Mrrocpp_Proxy::Reading>((Types::Mrrocpp_Proxy::Reading*)NULL);
+//
+//		if(readingMessage.get() != 0){
+//			LOG(LFATAL) << "readingMessage.get() != 0";
+//		}
+	}
 	LOG(LNOTICE) << "Client connected.";
 	state = MPS_CONNECTED;
 }
@@ -131,15 +138,19 @@ void Mrrocpp_Proxy::tryAcceptConnection()
 void Mrrocpp_Proxy::tryReceiveFromMrrocpp()
 {
 	try {
+		//LOG(LFATAL)<<"Mrrocpp_Proxy::tryReceiveFromMrrocpp() begin\n";
 		if (clientSocket->isDataAvailable(numeric_limits <double>::infinity())) {
+			//LOG(LFATAL)<<"Mrrocpp_Proxy::tryReceiveFromMrrocpp() 1\n";
 			mutex::scoped_lock lock(readingMutex);
 			receiveBuffersFromMrrocpp();
+			//LOG(LFATAL)<<"Mrrocpp_Proxy::tryReceiveFromMrrocpp() 2\n";
 			if (imh.is_rpc_call) {
 				rpcCallMutex.lock();
 				rpcParam.write(*iarchive); // send RPC param
 				rpcCall->raise();
 				state = MPS_WAITING_FOR_RPC_RESULT; // wait for RPC result
 			} else {
+				//LOG(LFATAL) << "Mrrocpp_Proxy::tryReceiveFromMrrocpp() get_reading";
 				oarchive->clear_buffer();
 				if (readingMessage.get() != 0) { // there is no reading ready
 					rmh.is_rpc_call = false;
@@ -149,8 +160,9 @@ void Mrrocpp_Proxy::tryReceiveFromMrrocpp()
 				}
 
 				sendBuffersToMrrocpp();
-				readingMessage.reset();
+				readingMessage = boost::shared_ptr <Types::Mrrocpp_Proxy::Reading>((Types::Mrrocpp_Proxy::Reading*)NULL);
 			}
+			//LOG(LFATAL)<<"Mrrocpp_Proxy::tryReceiveFromMrrocpp() 3\n";
 		}
 	} catch (std::exception& ex) {
 		LOG(LERROR) << "Mrrocpp_Proxy::tryReceiveFromMrrocpp(): Probably client disconnected: " << ex.what();
@@ -158,15 +170,24 @@ void Mrrocpp_Proxy::tryReceiveFromMrrocpp()
 		clientSocket->closeSocket();
 		state = MPS_LISTENING;
 	}
+	//LOG(LFATAL)<<"Mrrocpp_Proxy::tryReceiveFromMrrocpp() end\n";
 }
 
 void Mrrocpp_Proxy::onNewReading()
 {
+	//static int counter = 0;
+	//LOG(LFATAL)<<"Mrrocpp_Proxy::onNewReading() begin: " << (++counter);
 	mutex::scoped_lock lock(readingMutex);
-	readingMessage = reading.read();
-	if (!in_timestamp.empty()) {
-		readingTimestamp = in_timestamp.read();
+	//LOG(LFATAL)<<"Mrrocpp_Proxy::onNewReading() 1";
+	if(state == MPS_CONNECTED){
+		readingMessage = reading.read();
+		if (!in_timestamp.empty()) {
+			readingTimestamp = in_timestamp.read();
+		}
+	} else {
+		reading.read();
 	}
+	//LOG(LFATAL)<<"Mrrocpp_Proxy::onNewReading() end";
 }
 
 void Mrrocpp_Proxy::onRpcResult()
@@ -211,6 +232,8 @@ void Mrrocpp_Proxy::sendBuffersToMrrocpp()
 	LOG(LTRACE) << "sendBuffersToMrrocpp() begin\n";
 
 	rmh.data_size = oarchive->getArchiveSize();
+	//LOG(LFATAL) << "sendBuffersToMrrocpp(): rmh.data_size = " << rmh.data_size;
+	//LOG(LFATAL) << "sendBuffersToMrrocpp(): rmh.readingTimeSeconds = "<<rmh.readingTimeSeconds<<"; rmh.readingTimeNanoseconds = " << rmh.readingTimeNanoseconds << "\n";
 	struct timespec ts;
 	if(clock_gettime(CLOCK_REALTIME, &ts) == 0){
 		rmh.sendTimeSeconds = ts.tv_sec;
