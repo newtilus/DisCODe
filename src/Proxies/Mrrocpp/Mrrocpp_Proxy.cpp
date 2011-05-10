@@ -154,8 +154,8 @@ void Mrrocpp_Proxy::tryReceiveFromMrrocpp()
 				oarchive->clear_buffer();
 				if (readingMessage.get() != 0) { // there is no reading ready
 					rmh.is_rpc_call = false;
-					rmh.readingTimeNanoseconds = readingTimestamp.tv_nsec;
-					rmh.readingTimeSeconds = readingTimestamp.tv_sec;
+					rmh.imageSourceTimeNanoseconds = readingTimestamp.tv_nsec;
+					rmh.imageSourceTimeSeconds = readingTimestamp.tv_sec;
 					readingMessage->send(oarchive);
 				}
 
