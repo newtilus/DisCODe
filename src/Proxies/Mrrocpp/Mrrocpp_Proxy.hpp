@@ -157,7 +157,7 @@ private:
 	void serviceReading();
 
 	Base::EventHandler <Mrrocpp_Proxy> h_onNewReading;
-	Base::DataStreamInPtr <Types::Mrrocpp_Proxy::Reading, Base::DataStreamBuffer::Newest, Base::Synchronization::Mutex> reading;
+	Base::DataStreamInPtr <Types::Mrrocpp_Proxy::Reading> reading;
 
 	/**
 	 * Event handler called when RPC call has finished.
