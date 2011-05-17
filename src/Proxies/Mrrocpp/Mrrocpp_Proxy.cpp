@@ -35,6 +35,9 @@ Mrrocpp_Proxy::Mrrocpp_Proxy(const std::string & name) :
 	port.addConstraint("0");
 	port.addConstraint("65535");
 	registerProperty(port);
+
+	waitForRequestTimeout = 0.12;
+	//waitForRequestTimeout = numeric_limits <double>::infinity();
 }
 
 Mrrocpp_Proxy::~Mrrocpp_Proxy()
@@ -139,7 +142,7 @@ void Mrrocpp_Proxy::tryReceiveFromMrrocpp()
 {
 	try {
 		//LOG(LFATAL)<<"Mrrocpp_Proxy::tryReceiveFromMrrocpp() begin\n";
-		if (clientSocket->isDataAvailable(numeric_limits <double>::infinity())) {
+		if (clientSocket->isDataAvailable(waitForRequestTimeout)) {
 			//LOG(LFATAL)<<"Mrrocpp_Proxy::tryReceiveFromMrrocpp() 1\n";
 			mutex::scoped_lock lock(readingMutex);
 			receiveBuffersFromMrrocpp();
@@ -180,12 +183,18 @@ void Mrrocpp_Proxy::onNewReading()
 	mutex::scoped_lock lock(readingMutex);
 	//LOG(LFATAL)<<"Mrrocpp_Proxy::onNewReading() 1";
 	if(state == MPS_CONNECTED){
-		readingMessage = reading.read();
+		if(!reading.empty()){
+			readingMessage = reading.read();
+		} else {
+			LOG(LWARNING) << "Component " << name() << ": input data stream reading is empty. Probably no datastream connected.";
+		}
 		if (!in_timestamp.empty()) {
 			readingTimestamp = in_timestamp.read();
 		}
 	} else {
-		reading.read();
+		if(!reading.empty()){
+			reading.read();
+		}
 	}
 	//LOG(LFATAL)<<"Mrrocpp_Proxy::onNewReading() end";
 }

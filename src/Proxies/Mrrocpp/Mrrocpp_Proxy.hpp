@@ -157,7 +157,7 @@ private:
 	void serviceReading();
 
 	Base::EventHandler <Mrrocpp_Proxy> h_onNewReading;
-	Base::DataStreamInPtr <Types::Mrrocpp_Proxy::Reading> reading;
+	Base::DataStreamInPtr <Types::Mrrocpp_Proxy::Reading, Base::DataStreamBuffer::Newest, Base::Synchronization::Mutex> reading;
 
 	/**
 	 * Event handler called when RPC call has finished.
@@ -198,6 +198,8 @@ private:
 	boost::mutex rpcCallMutex;
 
 	Base::Property<int> port;
+
+	double waitForRequestTimeout;
 };
 
 } // namespace Mrrocpp {
