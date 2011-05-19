@@ -35,6 +35,9 @@ Mrrocpp_Proxy::Mrrocpp_Proxy(const std::string & name) :
 	port.addConstraint("0");
 	port.addConstraint("65535");
 	registerProperty(port);
+
+	waitForRequestTimeout = 0.12;
+	//waitForRequestTimeout = numeric_limits <double>::infinity();
 }
 
 Mrrocpp_Proxy::~Mrrocpp_Proxy()
@@ -65,8 +68,8 @@ bool Mrrocpp_Proxy::onInit()
 
 	serverSocket.setupServerSocket(port);
 
-	readingMessage.reset();
-	rpcResultMessage.reset();
+	readingMessage = boost::shared_ptr <Types::Mrrocpp_Proxy::Reading>((Types::Mrrocpp_Proxy::Reading*)NULL);
+	rpcResultMessage = boost::shared_ptr <Types::Mrrocpp_Proxy::Reading>((Types::Mrrocpp_Proxy::Reading*)NULL);
 
 	state = MPS_LISTENING;
 
@@ -84,8 +87,8 @@ bool Mrrocpp_Proxy::onFinish()
 	LOG(LTRACE) << "Mrrocpp_Proxy::onFinish\n";
 	serverSocket.closeSocket();
 
-	readingMessage.reset();
-	rpcResultMessage.reset();
+	readingMessage = boost::shared_ptr <Types::Mrrocpp_Proxy::Reading>((Types::Mrrocpp_Proxy::Reading*)NULL);
+	rpcResultMessage = boost::shared_ptr <Types::Mrrocpp_Proxy::Reading>((Types::Mrrocpp_Proxy::Reading*)NULL);
 
 	state = MPS_NOT_INITIALIZED;
 
@@ -105,8 +108,9 @@ bool Mrrocpp_Proxy::onStep()
 			tryReceiveFromMrrocpp();
 			break;
 		case MPS_WAITING_FOR_RPC_RESULT:
-			rpcCallMutex.lock();
-			rpcCallMutex.unlock();
+			LOG(LNOTICE) << "Mrrocpp_Proxy::onStep() MPS_WAITING_FOR_RPC_RESULT";
+			//rpcCallMutex.lock();
+			//rpcCallMutex.unlock();
 			break;
 		default:
 			throw logic_error("Mrrocpp_Proxy::onStep(): wrong state");
@@ -122,8 +126,15 @@ void Mrrocpp_Proxy::tryAcceptConnection()
 		return;
 	}
 	clientSocket = serverSocket.acceptConnection();
-	readingMessage.reset();
-	rpcResultMessage.reset();
+	{
+		mutex::scoped_lock lock(readingMutex);
+//		readingMessage = boost::shared_ptr <Types::Mrrocpp_Proxy::Reading>((Types::Mrrocpp_Proxy::Reading*)NULL);
+//		rpcResultMessage = boost::shared_ptr <Types::Mrrocpp_Proxy::Reading>((Types::Mrrocpp_Proxy::Reading*)NULL);
+//
+//		if(readingMessage.get() != 0){
+//			LOG(LFATAL) << "readingMessage.get() != 0";
+//		}
+	}
 	LOG(LNOTICE) << "Client connected.";
 	state = MPS_CONNECTED;
 }
@@ -131,26 +142,32 @@ void Mrrocpp_Proxy::tryAcceptConnection()
 void Mrrocpp_Proxy::tryReceiveFromMrrocpp()
 {
 	try {
-		if (clientSocket->isDataAvailable(numeric_limits <double>::infinity())) {
+		//LOG(LFATAL)<<"Mrrocpp_Proxy::tryReceiveFromMrrocpp() begin\n";
+		if (clientSocket->isDataAvailable(waitForRequestTimeout)) {
+			//LOG(LFATAL)<<"Mrrocpp_Proxy::tryReceiveFromMrrocpp() 1\n";
 			mutex::scoped_lock lock(readingMutex);
 			receiveBuffersFromMrrocpp();
+			//LOG(LFATAL)<<"Mrrocpp_Proxy::tryReceiveFromMrrocpp() 2\n";
 			if (imh.is_rpc_call) {
+				LOG(LNOTICE)<<"RPC Call received.";
 				rpcCallMutex.lock();
 				rpcParam.write(*iarchive); // send RPC param
 				rpcCall->raise();
 				state = MPS_WAITING_FOR_RPC_RESULT; // wait for RPC result
 			} else {
+				//LOG(LFATAL) << "Mrrocpp_Proxy::tryReceiveFromMrrocpp() get_reading";
 				oarchive->clear_buffer();
 				if (readingMessage.get() != 0) { // there is no reading ready
 					rmh.is_rpc_call = false;
-					rmh.readingTimeNanoseconds = readingTimestamp.tv_nsec;
-					rmh.readingTimeSeconds = readingTimestamp.tv_sec;
+					rmh.imageSourceTimeNanoseconds = readingTimestamp.tv_nsec;
+					rmh.imageSourceTimeSeconds = readingTimestamp.tv_sec;
 					readingMessage->send(oarchive);
 				}
 
 				sendBuffersToMrrocpp();
-				readingMessage.reset();
+				readingMessage = boost::shared_ptr <Types::Mrrocpp_Proxy::Reading>((Types::Mrrocpp_Proxy::Reading*)NULL);
 			}
+			//LOG(LFATAL)<<"Mrrocpp_Proxy::tryReceiveFromMrrocpp() 3\n";
 		}
 	} catch (std::exception& ex) {
 		LOG(LERROR) << "Mrrocpp_Proxy::tryReceiveFromMrrocpp(): Probably client disconnected: " << ex.what();
@@ -158,15 +175,30 @@ void Mrrocpp_Proxy::tryReceiveFromMrrocpp()
 		clientSocket->closeSocket();
 		state = MPS_LISTENING;
 	}
+	//LOG(LFATAL)<<"Mrrocpp_Proxy::tryReceiveFromMrrocpp() end\n";
 }
 
 void Mrrocpp_Proxy::onNewReading()
 {
+	//static int counter = 0;
+	//LOG(LFATAL)<<"Mrrocpp_Proxy::onNewReading() begin: " << (++counter);
 	mutex::scoped_lock lock(readingMutex);
-	readingMessage = reading.read();
-	if (!in_timestamp.empty()) {
-		readingTimestamp = in_timestamp.read();
+	//LOG(LFATAL)<<"Mrrocpp_Proxy::onNewReading() 1";
+	if(state == MPS_CONNECTED){
+		if(!reading.empty()){
+			readingMessage = reading.read();
+		} else {
+			LOG(LWARNING) << "Component " << name() << ": input data stream reading is empty. Probably no datastream connected.";
+		}
+		if (!in_timestamp.empty()) {
+			readingTimestamp = in_timestamp.read();
+		}
+	} else {
+		if(!reading.empty()){
+			reading.read();
+		}
 	}
+	//LOG(LFATAL)<<"Mrrocpp_Proxy::onNewReading() end";
 }
 
 void Mrrocpp_Proxy::onRpcResult()
@@ -211,6 +243,8 @@ void Mrrocpp_Proxy::sendBuffersToMrrocpp()
 	LOG(LTRACE) << "sendBuffersToMrrocpp() begin\n";
 
 	rmh.data_size = oarchive->getArchiveSize();
+	//LOG(LFATAL) << "sendBuffersToMrrocpp(): rmh.data_size = " << rmh.data_size;
+	//LOG(LFATAL) << "sendBuffersToMrrocpp(): rmh.readingTimeSeconds = "<<rmh.readingTimeSeconds<<"; rmh.readingTimeNanoseconds = " << rmh.readingTimeNanoseconds << "\n";
 	struct timespec ts;
 	if(clock_gettime(CLOCK_REALTIME, &ts) == 0){
 		rmh.sendTimeSeconds = ts.tv_sec;
