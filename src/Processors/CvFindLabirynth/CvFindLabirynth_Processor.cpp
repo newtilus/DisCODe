@@ -115,8 +115,19 @@ void CvFindLabirynth_Processor::onRpcCall()
 {
 	LOG(LTRACE) << "void CvFindLabirynth_Processor::onRpcCall() begin\n";
 
+	xdr_iarchive <> param = rpcParam.read();
+	double paramT;
+	param >> paramT;
+	LOG(LNOTICE) << "CvFindLabirynth_Processor::onRpcCall(): paramT=" << paramT;
+
+	//double temp = (double)param;
+	//std::cout<<"Param= "<<param.toStr()<<std::endl;
+
+
 	LReading lr;
 	lr.info = 2.5;
+
+	std::cout<<"lr.info= "<<lr.info<<std::endl;
 
 	out_info.write(lr);
 /*

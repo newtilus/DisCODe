@@ -9,6 +9,7 @@
 #include <limits>
 
 #include "Mrrocpp_Proxy.hpp"
+#include "Common/Thread.hpp"
 
 namespace Proxies {
 namespace Mrrocpp {
@@ -108,9 +109,7 @@ bool Mrrocpp_Proxy::onStep()
 			tryReceiveFromMrrocpp();
 			break;
 		case MPS_WAITING_FOR_RPC_RESULT:
-			LOG(LNOTICE) << "Mrrocpp_Proxy::onStep() MPS_WAITING_FOR_RPC_RESULT";
-			//rpcCallMutex.lock();
-			//rpcCallMutex.unlock();
+			Common::Thread::msleep(50);
 			break;
 		default:
 			throw logic_error("Mrrocpp_Proxy::onStep(): wrong state");
@@ -215,7 +214,7 @@ void Mrrocpp_Proxy::onRpcResult()
 	rmh.is_rpc_call = true;
 
 	oarchive->clear_buffer();
-	*oarchive << (*rpcResultMessage);
+	rpcResultMessage->send(oarchive);
 
 	sendBuffersToMrrocpp();
 
