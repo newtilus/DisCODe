@@ -108,8 +108,9 @@ bool Mrrocpp_Proxy::onStep()
 			tryReceiveFromMrrocpp();
 			break;
 		case MPS_WAITING_FOR_RPC_RESULT:
-			rpcCallMutex.lock();
-			rpcCallMutex.unlock();
+			LOG(LNOTICE) << "Mrrocpp_Proxy::onStep() MPS_WAITING_FOR_RPC_RESULT";
+			//rpcCallMutex.lock();
+			//rpcCallMutex.unlock();
 			break;
 		default:
 			throw logic_error("Mrrocpp_Proxy::onStep(): wrong state");
@@ -148,6 +149,7 @@ void Mrrocpp_Proxy::tryReceiveFromMrrocpp()
 			receiveBuffersFromMrrocpp();
 			//LOG(LFATAL)<<"Mrrocpp_Proxy::tryReceiveFromMrrocpp() 2\n";
 			if (imh.is_rpc_call) {
+				LOG(LNOTICE)<<"RPC Call received.";
 				rpcCallMutex.lock();
 				rpcParam.write(*iarchive); // send RPC param
 				rpcCall->raise();
