@@ -22,6 +22,10 @@ public:
 	virtual ~Circles();
 
 	std::vector<cv::Vec3f> circles;
+
+	virtual void draw(cv::Mat& image, CvScalar color, int offsetX = 0, int offsetY = 0);
+
+	virtual Drawable * clone();
 };
 
 }

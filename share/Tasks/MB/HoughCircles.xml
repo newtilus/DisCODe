@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Task>
+	<Components>
+		<CameraOpenCV type="CameraOpenCV" thread="Thread1" group="s1">
+		</CameraOpenCV>
+		
+		<Col1 type="CvColorConv" thread="Thread1" group="s1">
+			<type>BGR2GRAY</type>	
+		</Col1>
+		
+		<CvHoughCircles type="CvHoughCircles" thread="Thread1" group="s1">
+					
+		</CvHoughCircles>
+		
+		<Window type="CvWindow" thread="PreviewExecutor" group="s1">
+			<title>Preview</title>
+		</Window>
+	</Components>
+
+	<Executors>
+		<Thread1 type="continuous">
+			<main_component>CameraOpenCV</main_component>
+		</Thread1>
+		
+		<PreviewExecutor type="periodic">
+			<main_component>Window</main_component>
+			<interval>0.03</interval>
+		</PreviewExecutor>
+	</Executors>
+
+	<Events>
+		<Event source="CameraOpenCV.newImage" destination="Window.onNewImage"/>
+		<Event source="CameraOpenCV.newImage" destination="Col1.onNewImage"/>
+		<Event source="Col1.newImage" destination="CvHoughCircles.onNewImage"/>
+	</Events>
+
+	<DataStreams>
+		<CameraOpenCV>
+			<out_img type="out" group="ImageFromCamera"/>
+		</CameraOpenCV>
+		
+		<Col1>
+			<in_img type="in" group="ImageFromCamera"></in_img>
+			<out_img type="out" group="GrayscaleImage"></out_img>
+		</Col1>
+		
+		<CvHoughCircles>
+			<in_img  type="in" group="GrayscaleImage"/>
+			<out_circles type="out" group="Circles"/>
+		</CvHoughCircles>
+		
+		<Window>
+			<in_img type="in" group="ImageFromCamera"/>
+			<in_draw type="in" group="Circles"/>
+		</Window>
+	</DataStreams>
+</Task>

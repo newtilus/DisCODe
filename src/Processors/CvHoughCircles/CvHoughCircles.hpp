@@ -11,6 +11,7 @@
 #include "Panel_Empty.hpp"
 #include "DataStream.hpp"
 #include "Property.hpp"
+#include "Circles/Circles.hpp"
 
 #include <cv.h>
 using namespace cv;
@@ -64,7 +65,7 @@ protected:
 
 private:
 
-	Base::Property<double> inverseRatio;
+	Base::Property<double> inverseRatioOfAccumulatorResolution;
 	Base::Property<double> minDist;
 	Base::Property<double> cannyHigherThreshold;
 	Base::Property<double> accumulatorThreshold;
@@ -79,6 +80,9 @@ private:
 	Base::EventHandler <CvHoughCircles_Processor> h_onNewImage;
 	/** Image stream. */
 	Base::DataStreamIn <cv::Mat> in_img;
+
+	Base::DataStreamOut <Types::Circles> out_circles;
+	Base::Event* newCircles;
 };
 
 }//: namespace CvHoughCircles
