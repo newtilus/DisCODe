@@ -25,7 +25,7 @@ Circles::~Circles()
 	// TODO Auto-generated destructor stub
 }
 
-void Circles::draw(cv::Mat& image, CvScalar color, int offsetX = 0, int offsetY = 0)
+void Circles::draw(cv::Mat& image, CvScalar color, int offsetX, int offsetY)
 {
 	for (unsigned int i = 0; i < circles.size(); ++i) {
 		Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));

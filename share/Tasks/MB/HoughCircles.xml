@@ -9,7 +9,12 @@
 		</Col1>
 		
 		<CvHoughCircles type="CvHoughCircles" thread="Thread1" group="s1">
-					
+			<inverseRatioOfAccumulatorResolution>2</inverseRatioOfAccumulatorResolution>
+			<minDist>40</minDist>
+			<cannyHigherThreshold>100</cannyHigherThreshold>
+			<accumulatorThreshold>150</accumulatorThreshold>
+			<minCircleRadius>20</minCircleRadius>
+			<maxCircleRadius>500</maxCircleRadius>					
 		</CvHoughCircles>
 		
 		<Window type="CvWindow" thread="PreviewExecutor" group="s1">

@@ -17,11 +17,19 @@ using namespace std;
 using Types::Circles;
 
 CvHoughCircles_Processor::CvHoughCircles_Processor(const std::string & name) :
-	Base::Component(name), inverseRatioOfAccumulatorResolution("inverseRatioOfAccumulatorResolution"), minDist("minDist"),
-			cannyHigherThreshold("cannyHigherThreshold"), accumulatorThreshold("accumulatorThreshold"),
-			minCircleRadius("minCircleRadius"), maxCircleRadius("maxCircleRadius")
+	Base::Component(name), inverseRatioOfAccumulatorResolution("inverseRatioOfAccumulatorResolution"),
+			minDist("minDist"), cannyHigherThreshold("cannyHigherThreshold"),
+			accumulatorThreshold("accumulatorThreshold"), minCircleRadius("minCircleRadius"),
+			maxCircleRadius("maxCircleRadius")
 {
 	LOG(LTRACE) << "Hello CvHoughCircles_Processor\n";
+	registerProperty(inverseRatioOfAccumulatorResolution);
+	registerProperty(minDist);
+	registerProperty(cannyHigherThreshold);
+	registerProperty(accumulatorThreshold);
+	registerProperty(minCircleRadius);
+	registerProperty(maxCircleRadius);
+
 }
 
 CvHoughCircles_Processor::~CvHoughCircles_Processor()
@@ -41,7 +49,6 @@ bool CvHoughCircles_Processor::onInit()
 
 	registerStream("in_img", &in_img);
 	registerStream("out_circles", &out_circles);
-
 
 	return true;
 }
@@ -71,13 +78,13 @@ bool CvHoughCircles_Processor::onStart()
 
 void CvHoughCircles_Processor::onNewImage()
 {
-	if(in_img.empty()){
+	if (in_img.empty()) {
 		LOG(LFATAL) << "Component " << name() << " " << "in_img input stream is empty.";
 		return;
 	}
 	Mat image = in_img.read();
 
-	if(image.channels() != 1){
+	if (image.channels() != 1) {
 		LOG(LFATAL) << "Component " << name() << " " << "in_img received image must have only one channel.";
 		return;
 	}
