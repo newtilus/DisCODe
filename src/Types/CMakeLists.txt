@@ -34,6 +34,8 @@ ENDIF(WITH_BLOBS)
 
 
 # One line per subfolder
+include_directories(Circles)
+
 FILE(GLOB local *.cpp)
 FILE(GLOB objects3d Objects3D/*.cpp)
 
