@@ -22,14 +22,12 @@ CvHoughCircles_Processor::CvHoughCircles_Processor(const std::string & name) :
 			accumulatorThreshold("accumulatorThreshold"), minCircleRadius("minCircleRadius"),
 			maxCircleRadius("maxCircleRadius")
 {
-	LOG(LTRACE) << "Hello CvHoughCircles_Processor\n";
 	registerProperty(inverseRatioOfAccumulatorResolution);
 	registerProperty(minDist);
 	registerProperty(cannyHigherThreshold);
 	registerProperty(accumulatorThreshold);
 	registerProperty(minCircleRadius);
 	registerProperty(maxCircleRadius);
-
 }
 
 CvHoughCircles_Processor::~CvHoughCircles_Processor()
@@ -55,14 +53,11 @@ bool CvHoughCircles_Processor::onInit()
 
 bool CvHoughCircles_Processor::onFinish()
 {
-	LOG(LTRACE) << "CvHoughCircles_Processor::finish\n";
-
 	return true;
 }
 
 bool CvHoughCircles_Processor::onStep()
 {
-	LOG(LTRACE) << "CvHoughCircles_Processor::step\n";
 	return true;
 }
 

@@ -5,10 +5,19 @@
 		</CameraOpenCV>
 		
 		<Col1 type="CvColorConv" thread="Thread1" group="s1">
-			<type>BGR2GRAY</type>	
+			<type>BGR2GRAY</type>
 		</Col1>
 		
+		<CvAdaptiveThreshold type="CvAdaptiveThreshold" thread="Thread1" group="s1">
+			<maxValue>255</maxValue>
+			<method>ADAPTIVE_THRESH_MEAN_C</method>
+			<thresholdType>THRESH_BINARY</thresholdType>
+			<blockSize>3</blockSize>
+			<C>1</C>
+		</CvAdaptiveThreshold>
+		
 		<CvHoughCircles type="CvHoughCircles" thread="Thread1" group="s1">
+			<useAdaptiveThreshold>1</useAdaptiveThreshold>
 			<inverseRatioOfAccumulatorResolution>2</inverseRatioOfAccumulatorResolution>
 			<minDist>40</minDist>
 			<cannyHigherThreshold>100</cannyHigherThreshold>
@@ -19,6 +28,7 @@
 		
 		<Window type="CvWindow" thread="PreviewExecutor" group="s1">
 			<title>Preview</title>
+			<count>2</count>
 		</Window>
 	</Components>
 
@@ -34,9 +44,11 @@
 	</Executors>
 
 	<Events>
-		<Event source="CameraOpenCV.newImage" destination="Window.onNewImage"/>
+		<Event source="CameraOpenCV.newImage" destination="Window.onNewImage0"/>
 		<Event source="CameraOpenCV.newImage" destination="Col1.onNewImage"/>
-		<Event source="Col1.newImage" destination="CvHoughCircles.onNewImage"/>
+		<Event source="Col1.newImage" destination="CvAdaptiveThreshold.onNewImage"/>
+		<Event source="CvAdaptiveThreshold.newImage" destination="CvHoughCircles.onNewImage"/>
+		<Event source="CvAdaptiveThreshold.newImage" destination="Window.onNewImage1"/>
 	</Events>
 
 	<DataStreams>
@@ -49,14 +61,21 @@
 			<out_img type="out" group="GrayscaleImage"></out_img>
 		</Col1>
 		
+		<CvAdaptiveThreshold>
+			<in_img type="in" group="GrayscaleImage"/>
+			<out_img type="out" group="ThresholdedImage"/>
+		</CvAdaptiveThreshold>
+		
 		<CvHoughCircles>
-			<in_img  type="in" group="GrayscaleImage"/>
+			<in_img  type="in" group="ThresholdedImage"/>
 			<out_circles type="out" group="Circles"/>
 		</CvHoughCircles>
 		
 		<Window>
-			<in_img type="in" group="ImageFromCamera"/>
-			<in_draw type="in" group="Circles"/>
+			<in_img0 type="in" group="ImageFromCamera"/>
+			<in_draw0 type="in" group="Circles"/>
+			
+			<in_img1 type="in" group="ThresholdedImage"/>
 		</Window>
 	</DataStreams>
 </Task>

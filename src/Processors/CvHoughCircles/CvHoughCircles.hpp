@@ -64,17 +64,12 @@ protected:
 	bool onStop();
 
 private:
-
 	Base::Property<double> inverseRatioOfAccumulatorResolution;
 	Base::Property<double> minDist;
 	Base::Property<double> cannyHigherThreshold;
 	Base::Property<double> accumulatorThreshold;
 	Base::Property<int> minCircleRadius;
 	Base::Property<int> maxCircleRadius;
-
-
-
-	void onNewImage();
 
 	/** New image event handler. */
 	Base::EventHandler <CvHoughCircles_Processor> h_onNewImage;
@@ -83,6 +78,8 @@ private:
 
 	Base::DataStreamOut <Types::Circles> out_circles;
 	Base::Event* newCircles;
+
+	void onNewImage();
 };
 
 }//: namespace CvHoughCircles
