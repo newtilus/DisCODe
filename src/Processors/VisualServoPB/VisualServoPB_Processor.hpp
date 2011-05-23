@@ -6,6 +6,8 @@
 #ifndef VISUALSERVOPB_PROCESSOR_PROCESSOR_HPP_
 #define VISUALSERVOPB_PROCESSOR_PROCESSOR_HPP_
 
+#include <ctime>
+
 #include "Component_Aux.hpp"
 #include "Component.hpp"
 #include "Panel_Empty.hpp"
@@ -102,7 +104,10 @@ private:
 	void onObjectLocated();
 	void onObjectNotFound();
 
+	void saveTime(Types::Mrrocpp_Proxy::PBReading& reading);
+
 	Base::DataStreamIn<Types::HomogMatrix> in_position;
+	Base::DataStreamIn<struct timespec> in_timestamp;
 	Base::DataStreamOut<Types::Mrrocpp_Proxy::PBReading> out_reading;
 
 	Base::EventHandler <VisualServoPB_Processor> h_onObjectLocated;

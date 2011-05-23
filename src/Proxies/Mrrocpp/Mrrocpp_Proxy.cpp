@@ -7,6 +7,7 @@
  */
 
 #include <limits>
+#include <ctime>
 
 #include "Mrrocpp_Proxy.hpp"
 #include "Common/Thread.hpp"
@@ -59,7 +60,6 @@ bool Mrrocpp_Proxy::onInit()
 	h_onNewReading.setup(this, &Mrrocpp_Proxy::onNewReading);
 	registerHandler("onNewReading", &h_onNewReading);
 	registerStream("reading", &reading);
-	registerStream("in_timestamp", &in_timestamp);
 
 	rpcCall = registerEvent("rpcCall");
 	registerStream("rpcParam", &rpcParam);
@@ -162,10 +162,13 @@ void Mrrocpp_Proxy::tryReceiveFromMrrocpp()
 				state = MPS_WAITING_FOR_RPC_RESULT; // wait for RPC result
 			} else {
 				oarchive->clear_buffer();
-				if (readingMessage.get() != 0) { // there is no reading ready
+				if(!reading.empty()){
+					readingMessage = reading.read();
+				//}
+				//if (readingMessage.get() != 0) { // there is no reading ready
 					rmh.is_rpc_call = false;
-					rmh.imageSourceTimeNanoseconds = readingTimestamp.tv_nsec;
-					rmh.imageSourceTimeSeconds = readingTimestamp.tv_sec;
+//					rmh.imageSourceTimeNanoseconds = readingTimestamp.tv_nsec;
+//					rmh.imageSourceTimeSeconds = readingTimestamp.tv_sec;
 					readingMessage->send(oarchive);
 				}
 
@@ -184,24 +187,20 @@ void Mrrocpp_Proxy::tryReceiveFromMrrocpp()
 
 void Mrrocpp_Proxy::onNewReading()
 {
-	//static int counter = 0;
-	//LOG(LFATAL)<<"Mrrocpp_Proxy::onNewReading() begin: " << (++counter);
-	//LOG(LFATAL)<<"Mrrocpp_Proxy::onNewReading() 1";
-	if(state == MPS_CONNECTED){
-		if(!reading.empty()){
-			readingMessage = reading.read();
-		} else {
-			LOG(LWARNING) << "Component " << name() << ": input data stream reading is empty. Probably no datastream connected.";
-		}
-		if (!in_timestamp.empty()) {
-			readingTimestamp = in_timestamp.read();
-		}
-	} else {
-		if(!reading.empty()){
-			reading.read();
-		}
-	}
-	//LOG(LFATAL)<<"Mrrocpp_Proxy::onNewReading() end";
+//	if(state == MPS_CONNECTED){
+//		if(!reading.empty()){
+//			readingMessage = reading.read();
+//		} else {
+//			LOG(LWARNING) << "Component " << name() << ": input data stream reading is empty. Probably no datastream connected.";
+//		}
+//		if (!in_timestamp.empty()) {
+//			readingTimestamp = in_timestamp.read();
+//		}
+//	} else {
+//		if(!reading.empty()){
+//			reading.read();
+//		}
+//	}
 }
 
 void Mrrocpp_Proxy::onRpcResult()

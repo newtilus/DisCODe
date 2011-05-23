@@ -111,7 +111,7 @@
 		<!-- <Event source="VisualServoPB.readingReady" destination="ExecTimer.onStopExec"/>
 		<Event source="ExecTimer.stopped" destination="Mrrocpp.onNewReading"/> -->
 		
-		<Event source="VisualServoPB.readingReady" destination="Mrrocpp.onNewReading"/>
+		<!-- <Event source="VisualServoPB.readingReady" destination="Mrrocpp.onNewReading"/> -->
 		
 		<!-- <Event source="FindChessboard.chessboardNotFound" destination="Window.onNewImage"/>
 		<Event source="FindChessboard.chessboardFound" destination="Window.onNewImage"/> -->
@@ -150,12 +150,12 @@
 		
 		<VisualServoPB>
 			<in_position type="in" group="position"/>
+			<in_timestamp type="in" group="Timestamp"/>
 			<out_reading type="out" group="reading"/>
 		</VisualServoPB>
 		
 		<Mrrocpp>
 			<reading type="in" group="reading"/>
-			<in_timestamp type="in" group="Timestamp"/>
 		</Mrrocpp>
 		
 		<Window>

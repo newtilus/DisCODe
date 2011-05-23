@@ -9,7 +9,7 @@
 #ifndef MRROCPP_PROXY_HPP_
 #define MRROCPP_PROXY_HPP_
 
-#include <ctime>
+//#include <ctime>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/mutex.hpp>
@@ -158,7 +158,7 @@ private:
 	void serviceReading();
 
 	Base::EventHandler <Mrrocpp_Proxy> h_onNewReading;
-	Base::DataStreamInPtr <Types::Mrrocpp_Proxy::Reading> reading;
+	Base::DataStreamInPtr <Types::Mrrocpp_Proxy::Reading, Base::DataStreamBuffer::Newest, Base::Synchronization::Mutex> reading;
 
 	/**
 	 * Event handler called when RPC call has finished.
@@ -169,7 +169,6 @@ private:
 	Base::Event *rpcCall;
 	Base::DataStreamOut <xdr_iarchive <> > rpcParam;
 	Base::DataStreamInPtr <Types::Mrrocpp_Proxy::Reading, Base::DataStreamBuffer::Newest, Base::Synchronization::Mutex> rpcResult;
-	Base::DataStreamIn<struct timespec, Base::DataStreamBuffer::Newest, Base::Synchronization::Mutex> in_timestamp;
 	Base::EventHandler <Mrrocpp_Proxy> h_onRpcResult;
 
 	boost::shared_ptr <xdr_iarchive <> > header_iarchive;
@@ -178,7 +177,7 @@ private:
 	boost::shared_ptr <xdr_oarchive <> > oarchive;
 
 	boost::shared_ptr <Types::Mrrocpp_Proxy::Reading> readingMessage;
-	struct timespec readingTimestamp;
+	//struct timespec readingTimestamp;
 	boost::shared_ptr <Types::Mrrocpp_Proxy::Reading> rpcResultMessage;
 
 	void receiveBuffersFromMrrocpp();
