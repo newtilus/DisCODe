@@ -23,6 +23,7 @@
 #include "Socket.hpp"
 #include "headers.h"
 #include "Mrrocpp_Proxy/Reading.hpp"
+#include "Common/Timer.hpp"
 
 /*!
  * \defgroup Mrrocpp_Proxy Mrrocpp_Proxy
@@ -194,12 +195,17 @@ private:
 
 	size_t initiate_message_header_size;
 
-	boost::mutex readingMutex;
 	boost::mutex rpcCallMutex;
 
 	Base::Property<int> port;
 
 	double waitForRequestTimeout;
+
+
+	Common::Timer timer;
+
+	int loops;
+	float total;
 };
 
 } // namespace Mrrocpp {

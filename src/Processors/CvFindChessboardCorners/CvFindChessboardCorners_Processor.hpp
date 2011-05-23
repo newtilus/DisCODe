@@ -152,6 +152,9 @@ private:
 
 	void sizeCallback(int old_value, int new_value);
 	void flagsCallback(bool old_value, bool new_value);
+
+	int loops;
+	float total;
 };
 
 } // namespace CvFindChessboardCorners {

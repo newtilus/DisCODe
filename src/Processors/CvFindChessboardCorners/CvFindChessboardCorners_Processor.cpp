@@ -68,6 +68,9 @@ CvFindChessboardCorners_Processor::CvFindChessboardCorners_Processor(const std::
 	prop_width.setCallback(boost::bind(&CvFindChessboardCorners_Processor::sizeCallback, this, _1, _2));
 	prop_height.setCallback(boost::bind(&CvFindChessboardCorners_Processor::sizeCallback, this, _1, _2));
 
+	loops = 0;
+	total = 0;
+
 }
 
 CvFindChessboardCorners_Processor::~CvFindChessboardCorners_Processor()
@@ -187,7 +190,7 @@ void CvFindChessboardCorners_Processor::onNewImage()
 			found = findChessboardCorners(image, chessboardSize, corners, findChessboardCornersFlags);
 		}
 
-		LOG(LTRACE) << "findChessboardCorners() execution time: " << timer.elapsed() << " s\n";
+
 
 		if (found) {
 			LOG(LTRACE) << "chessboard found\n";
@@ -213,6 +216,14 @@ void CvFindChessboardCorners_Processor::onNewImage()
 			LOG(LTRACE) << "chessboard not found\n";
 
 			chessboardNotFound->raise();
+		}
+
+		loops++;
+		total += timer.elapsed();
+		if (loops >= 100) {
+			LOG(LWARNING) << "findChessboardCorners() execution time: " << 0.01 * total << " s\n";
+			loops = 0;
+			total = 0;
 		}
 	} catch (const Exception& e) {
 		LOG(LERROR) << e.what() << "\n";

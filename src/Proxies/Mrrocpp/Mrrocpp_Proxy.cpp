@@ -100,6 +100,8 @@ bool Mrrocpp_Proxy::onStep()
 {
 	LOG(LTRACE) << "Mrrocpp_Proxy::onStep\n";
 
+	timer.restart();
+
 	switch (state)
 	{
 		case MPS_LISTENING:
@@ -114,6 +116,15 @@ bool Mrrocpp_Proxy::onStep()
 		default:
 			throw logic_error("Mrrocpp_Proxy::onStep(): wrong state");
 	}
+
+	loops++;
+	total += timer.elapsed();
+	if (loops >= 100) {
+		LOG(LWARNING) << "Mrrocpp_Proxy execution time: " << 0.01 * total << " s\n";
+		loops = 0;
+		total = 0;
+	}
+
 	return true;
 }
 
@@ -126,7 +137,6 @@ void Mrrocpp_Proxy::tryAcceptConnection()
 	}
 	clientSocket = serverSocket.acceptConnection();
 	{
-		mutex::scoped_lock lock(readingMutex);
 //		readingMessage = boost::shared_ptr <Types::Mrrocpp_Proxy::Reading>((Types::Mrrocpp_Proxy::Reading*)NULL);
 //		rpcResultMessage = boost::shared_ptr <Types::Mrrocpp_Proxy::Reading>((Types::Mrrocpp_Proxy::Reading*)NULL);
 //
@@ -143,10 +153,7 @@ void Mrrocpp_Proxy::tryReceiveFromMrrocpp()
 	try {
 		//LOG(LFATAL)<<"Mrrocpp_Proxy::tryReceiveFromMrrocpp() begin\n";
 		if (clientSocket->isDataAvailable(waitForRequestTimeout)) {
-			//LOG(LFATAL)<<"Mrrocpp_Proxy::tryReceiveFromMrrocpp() 1\n";
-			mutex::scoped_lock lock(readingMutex);
 			receiveBuffersFromMrrocpp();
-			//LOG(LFATAL)<<"Mrrocpp_Proxy::tryReceiveFromMrrocpp() 2\n";
 			if (imh.is_rpc_call) {
 				LOG(LNOTICE)<<"RPC Call received.";
 				rpcCallMutex.lock();
@@ -154,7 +161,6 @@ void Mrrocpp_Proxy::tryReceiveFromMrrocpp()
 				rpcCall->raise();
 				state = MPS_WAITING_FOR_RPC_RESULT; // wait for RPC result
 			} else {
-				//LOG(LFATAL) << "Mrrocpp_Proxy::tryReceiveFromMrrocpp() get_reading";
 				oarchive->clear_buffer();
 				if (readingMessage.get() != 0) { // there is no reading ready
 					rmh.is_rpc_call = false;
@@ -166,7 +172,6 @@ void Mrrocpp_Proxy::tryReceiveFromMrrocpp()
 				sendBuffersToMrrocpp();
 				readingMessage = boost::shared_ptr <Types::Mrrocpp_Proxy::Reading>((Types::Mrrocpp_Proxy::Reading*)NULL);
 			}
-			//LOG(LFATAL)<<"Mrrocpp_Proxy::tryReceiveFromMrrocpp() 3\n";
 		}
 	} catch (std::exception& ex) {
 		LOG(LERROR) << "Mrrocpp_Proxy::tryReceiveFromMrrocpp(): Probably client disconnected: " << ex.what();
@@ -181,7 +186,6 @@ void Mrrocpp_Proxy::onNewReading()
 {
 	//static int counter = 0;
 	//LOG(LFATAL)<<"Mrrocpp_Proxy::onNewReading() begin: " << (++counter);
-	mutex::scoped_lock lock(readingMutex);
 	//LOG(LFATAL)<<"Mrrocpp_Proxy::onNewReading() 1";
 	if(state == MPS_CONNECTED){
 		if(!reading.empty()){
@@ -202,7 +206,6 @@ void Mrrocpp_Proxy::onNewReading()
 
 void Mrrocpp_Proxy::onRpcResult()
 {
-	mutex::scoped_lock lock(readingMutex);
 	LOG(LTRACE) << "Mrrocpp_Proxy::onRpcResult\n";
 	rpcResultMessage = rpcResult.read();
 

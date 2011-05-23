@@ -88,7 +88,7 @@
 		
 		<PreviewExecutor type="periodic">
 			<main_component>Window</main_component>
-			<interval>0.03</interval>
+			<interval>0.5</interval>
 		</PreviewExecutor>
 	</Executors>
 
@@ -113,7 +113,10 @@
 		
 		<Event source="VisualServoPB.readingReady" destination="Mrrocpp.onNewReading"/>
 		
+		<!-- <Event source="FindChessboard.chessboardNotFound" destination="Window.onNewImage"/>
+		<Event source="FindChessboard.chessboardFound" destination="Window.onNewImage"/> -->
 		<Event source="ImageSource.newImage" destination="Window.onNewImage"/>
+		
 	</Events>
 
 	<DataStreams>
