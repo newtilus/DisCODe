@@ -24,12 +24,6 @@ public:
 	{
 	}
 
-	IBReading(const IBReading& o)
-	{
-		objectVisible = o.objectVisible;
-		imagePosition = o.imagePosition;
-	}
-
 	virtual ~IBReading()
 	{
 	}
@@ -50,8 +44,9 @@ private:
 	template <class Archive>
 	void serialize(Archive & ar, const unsigned int version)
 	{
+//		LOG(LTRACE) << "IBReading::serialize()\n";
 		ar & boost::serialization::base_object <Reading>(*this);
-		LOG(LTRACE) << "IBReading::serialize()\n";
+
 		ar & objectVisible;
 		ar & imagePosition;
 	}

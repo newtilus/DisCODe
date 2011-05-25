@@ -38,20 +38,20 @@ public:
 	/**
 	 * Timestamp when processing starts (taken just after camera source).
 	 */
-	uint64_t processingStartSeconds;
-	uint64_t processingStartNanoseconds;
+	uint32_t processingStartSeconds;
+	uint32_t processingStartNanoseconds;
 
 	/**
 	 * Timestamp when processing ends (taken just before sending to mrroc proxy).
 	 */
-	uint64_t processingEndSeconds;
-	uint64_t processingEndNanoseconds;
+	uint32_t processingEndSeconds;
+	uint32_t processingEndNanoseconds;
 private:
 	friend class boost::serialization::access;
 	template <class Archive>
 	void serialize(Archive & ar, const unsigned int version)
 	{
-		LOG(LWARNING) << "Reading::serialize()\n";
+//		LOG(LWARNING) << "Reading::serialize()\n";
 		ar & processingStartSeconds;
 		ar & processingStartNanoseconds;
 

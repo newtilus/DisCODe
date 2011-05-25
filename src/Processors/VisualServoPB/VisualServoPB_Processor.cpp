@@ -117,6 +117,9 @@ void VisualServoPB_Processor::saveTime(Types::Mrrocpp_Proxy::PBReading& reading)
 		reading.processingStartNanoseconds = 0;
 	}
 
+//	LOG(LWARNING) << "VisualServoPB: processingStart = "<<reading.processingStartSeconds << "s " << reading.processingStartNanoseconds << "ns";
+//	LOG(LWARNING) << "VisualServoPB: processingEnd = "<<reading.processingEndSeconds << "s " << reading.processingEndNanoseconds << "ns";
+
 	//LOG(LNOTICE)<<endl;
 }
 
