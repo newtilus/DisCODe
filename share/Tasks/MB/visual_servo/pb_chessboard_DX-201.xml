@@ -88,7 +88,7 @@
 		
 		<PreviewExecutor type="periodic">
 			<main_component>Window</main_component>
-			<interval>0.5</interval>
+			<interval>0.08</interval>
 		</PreviewExecutor>
 	</Executors>
 
