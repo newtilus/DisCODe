@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Task>
+<!-- List of components -->
+	<Components>
+		<Kbd1 type="Keyboard" thread="Exec2" group="s1">
+		    <keys>t</keys> 
+		</Kbd1>
+			
+		<Seq1 type="Sequence" thread="Exec1" group="s1">
+			<directory>/home/enatil/Pobrane/Labyrinth</directory>
+			<triggered>true</triggered>			
+		</Seq1>
+		
+		<Wnd1 type="CvWindow" thread="Exec3" group="s1">
+			<title>Preview</title>
+		</Wnd1>
+		
+		<Lab1 type="EN_Labyrinth" thread="Exec2" group="s1">
+		  <x1>20</x1>
+		  <x2>20</x2>
+		  <y1>20</y1>
+		  <y2>20</y2>
+		  <threshold>100</threshold>
+		  <segmentation_threshold>250</segmentation_threshold>
+		  <min_length>5</min_length>
+		  <max_gap>5</max_gap>
+		</Lab1>
+	</Components>
+
+	<!-- Threads of execution -->
+	<Executors>
+		<Exec1 type="periodic">
+			<interval>2</interval>
+			<main_component>Seq1</main_component>
+		</Exec1>
+
+		<Exec2 type="continuous">
+			<main_component>Lab1</main_component>
+		</Exec2>
+
+	    <Exec3 type="periodic">
+	      <main_component>Wnd1</main_component>
+	      <interval>2</interval>
+	    </Exec3>
+	</Executors>
+
+	<!-- Event connections -->
+	<Events>
+		<Event source="Kbd1.t_Pressed" destination="Seq1.onTrigger"/>
+	    <Event source="Seq1.newImage" destination="Lab1.onNewImage"/>
+	  	<Event source="Lab1.newImage" destination="Wnd1.onNewImage"/>
+	</Events>
+
+	<!-- Data stream assignments -->
+	<DataStreams>
+
+    <Seq1>
+      <out_img type="out" group="Con1"/>
+    </Seq1>
+
+    <Lab1>
+        <in_img  type="in" group="Con1"/>
+        <out_img type="out" group="Con2"/>
+    </Lab1>
+
+    <Wnd1>
+        <in_img  type="in" group="Con2"/>
+    </Wnd1>
+	</DataStreams>
+
+</Task>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Task>
+	<!-- List of components -->
+	<Components>
+		<Source type="CameraUniCap" thread="Exec1" group="s1">
+			<dev>
+				<device>/dev/video0</device>
+				<input>Composite0</input>
+				<norm>PAL-BG</norm>
+				<format>BGR3</format>
+				<width>640</width>
+				<height>480</height>
+			</dev>
+			<image>
+				<brightness>0.5</brightness>
+				<contrast>0.5</contrast>
+				<saturation>0.5</saturation>
+				<hue>0.5</hue>
+			</image>
+		</Source>
+	
+		<Wnd1 type="CvWindow" thread="Exec2" group="s1">
+			<title>Preview</title>
+		</Wnd1>
+	
+	    <Lab1 type="EN_Labyrinth" thread="Exec3" group="s1">
+			<x1>20</x1>
+			<x2>20</x2>
+			<y1>20</y1>
+			<y2>20</y2>
+			<threshold>80</threshold>
+			<segmentation_threshold>250</segmentation_threshold>
+			<min_length>30</min_length>
+			<max_gap>10</max_gap>
+	    </Lab1>
+	</Components>
+
+	<!-- Threads of execution -->
+	<Executors>
+		<Exec1 type="periodic">
+			<interval>2</interval>
+			<main_component>Source</main_component>
+		</Exec1>
+		
+		<Exec2 type="periodic">
+			<interval>2</interval>
+			<main_component>Wnd1</main_component>
+		</Exec2>
+		
+		<Exec3 type="continuous">
+			<main_component>Lab1</main_component>
+		</Exec3>
+	</Executors>
+
+	<!-- Event connections -->
+	<Events>
+		<Event source="Source.newImage" destination="Lab1.onNewImage"/>
+		<Event source="Lab1.newImage" destination="Wnd1.onNewImage"/>
+	</Events>
+
+	<!-- Data stream assignments -->
+	<DataStreams>
+		<Source>
+			<out_img type="out" group="Con1"/>
+		</Source>
+		
+		<Lab1>
+			<in_img  type="in" group="Con1"/>
+			<out_img type="out" group="Con2"/>
+		</Lab1>
+		
+		<Wnd1>
+			<in_img  type="in" group="Con2"/>
+		</Wnd1>
+	</DataStreams>
+
+</Task>
