@@ -17,14 +17,16 @@
 #define HORIZONTAL 0
 #define VERTICAL 1
 
+#include <cv.h>
+#include <highgui.h>
 #include "Component_Aux.hpp"
 #include "Component.hpp"
 #include "Panel_Empty.hpp"
 #include "DataStream.hpp"
 #include "Props.hpp"
+#include "Common/xdr/xdr_iarchive.hpp"
 
-#include <cv.h>
-#include <highgui.h>
+#include "EN_Labyrinth_Reading.hpp"
 
 namespace Processors {
 namespace EN_Labyrinth {
@@ -76,9 +78,9 @@ struct Props: public Base::Props
 	int max_gap;
 };
 
+
 /*!
  * \class EN_Labyrinth
- * \brief Example processor class.
  */
 class EN_Labyrinth: public Base::Component
 {
@@ -133,18 +135,27 @@ protected:
 	 */
 	void onNewImage();
 
-	/// Event handler.
-	Base::EventHandler <EN_Labyrinth> h_onNewImage;
+	/*!
+	 * Event handler function.
+	 */
+	void onRpcCall();
 
-	/// Input image
-	Base::DataStreamIn <Mat, Base::DataStreamBuffer::Newest> in_img;
+	/// handlers
+	Base::EventHandler <EN_Labyrinth> h_onNewImage; // new image of labyrinth arrived
+	Base::EventHandler <EN_Labyrinth> h_onRpcCall; // RPC call from mrrocpp arrived
+
+	/// inputs
+	Base::DataStreamIn <Mat, Base::DataStreamBuffer::Newest> in_img; // new image of labyrinth
 	//Base::DataStreamIn <Mat> in_img;
+	Base::DataStreamIn <xdr_iarchive <> > rpcParam; // data from mrrocpp
 
-	/// Event raised, when image is processed
-	Base::Event * newImage;
+	/// output events
+	Base::Event* rpcResult; // the data ready to sent to mrrocpp
+	Base::Event* newImage; // new image of solved labyrinth ready to be presented
 
-	/// Output data stream - img
-	Base::DataStreamOut <Mat> out_img;
+	/// outputs
+	Base::DataStreamOut <Mat> out_img;	//new image of solved labyrinth
+	Base::DataStreamOut <Types::Mrrocpp_Proxy::EN_Labyrinth_Reading> result_to_mrrocpp; // the data to be sent to mrrocpp
 
 	// Load calibration parameters from file.
 	bool loadParameters();
@@ -181,7 +192,10 @@ private:
 	bool file_found;
 	bool labyrinth_found;
 	bool labyrinth_solved;
-
+	int path[];
+	int path_size;
+	int start_point[];
+	int end_point[];
 };
 
 class Cell

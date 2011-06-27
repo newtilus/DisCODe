@@ -11,10 +11,6 @@
 			<triggered>true</triggered>			
 		</Seq1>
 		
-		<Wnd1 type="CvWindow" thread="Exec3" group="s1">
-			<title>Preview</title>
-		</Wnd1>
-		
 		<Lab1 type="EN_Labyrinth" thread="Exec2" group="s1">
 		  <x1>20</x1>
 		  <x2>20</x2>
@@ -25,6 +21,15 @@
 		  <min_length>5</min_length>
 		  <max_gap>5</max_gap>
 		</Lab1>
+		
+		<Mrrocpp type="Mrrocpp" thread="Exec4" group="s1">
+			<port>8888</port>
+		</Mrrocpp>
+
+		<Wnd1 type="CvWindow" thread="Exec3" group="s1">
+			<title>Preview</title>
+		</Wnd1>
+		
 	</Components>
 
 	<!-- Threads of execution -->
@@ -42,16 +47,25 @@
 	      <main_component>Wnd1</main_component>
 	      <interval>2</interval>
 	    </Exec3>
+	    
+		<Exec4 type="continuous">
+			<main_component>Mrrocpp</main_component>
+		</Exec4>
+	    
 	</Executors>
 
 	<!-- Event connections -->
+	
 	<Events>
 		<Event source="Kbd1.t_Pressed" destination="Seq1.onTrigger"/>
 	    <Event source="Seq1.newImage" destination="Lab1.onNewImage"/>
+		<Event source="Lab1.rpcResult" destination="Mrrocpp.onRpcResult"/>
+		<Event source="Mrrocpp.rpcCall" destination="Lab1.onRpcCall"/>
 	  	<Event source="Lab1.newImage" destination="Wnd1.onNewImage"/>
 	</Events>
 
 	<!-- Data stream assignments -->
+	
 	<DataStreams>
 
     <Seq1>
@@ -61,7 +75,14 @@
     <Lab1>
         <in_img  type="in" group="Con1"/>
         <out_img type="out" group="Con2"/>
+		<rpcParam type="in" group="rpcParam"/>
+		<rpcResult type="out" group="rpcResult"/>
     </Lab1>
+
+	<Mrrocpp>
+		<rpcParam type="out" group="rpcParam"/>
+		<rpcResult type="in" group="rpcResult"/>
+	</Mrrocpp>
 
     <Wnd1>
         <in_img  type="in" group="Con2"/>

@@ -1,21 +1,21 @@
 /*!
  * \file EN_Labyrinth.cpp
  * \brief
- * \author kwasak
- * \date 2010-11-11
+ * \author enatil
  */
 
 #include <memory>
 #include <string>
 #include <iostream>
 #include <fstream>
-
 #include <boost/thread.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include "Logger.hpp"
 
 #include "EN_Labyrinth.hpp"
-#include "Logger.hpp"
+
+
 using namespace std;
+using Types::Mrrocpp_Proxy::EN_Labyrinth_Reading;
 
 namespace Processors {
 namespace EN_Labyrinth {
@@ -106,10 +106,15 @@ bool EN_Labyrinth::onInit()
 
 	h_onNewImage.setup(this, &EN_Labyrinth::onNewImage);
 	registerHandler("onNewImage", &h_onNewImage);
+	h_onRpcCall.setup(this, &EN_Labyrinth::onRpcCall);
+	registerHandler("onRpcCall", &h_onRpcCall);
 
 	registerStream("in_img", &in_img);
+	registerStream("rpcParam", &rpcParam);
+	registerStream("rpcResult", &result_to_mrrocpp);
 
 	newImage = registerEvent("newImage");
+	rpcResult = registerEvent("rpcResult");
 
 	//registerStream("out_hue", &out_hue);
 	//registerStream("out_saturation", &out_saturation);
@@ -145,6 +150,38 @@ bool EN_Labyrinth::onStart()
 	return true;
 }
 
+void EN_Labyrinth::onRpcCall()
+{
+	LOG(LNOTICE) << "void EN_Labyrinth::onRpcCall() begin\n";
+
+	xdr_iarchive <> mrrocpp_info = rpcParam.read();
+	double param;
+	mrrocpp_info >> param;
+	LOG(LNOTICE) << "CvFindLabirynth_Processor::onRpcCall(): param=" << param;
+
+	EN_Labyrinth_Reading reading;
+
+	reading.labyrinth_solved = true;
+	reading.path_size = 9;
+	reading.start_point_x = 1;
+	reading.start_point_y = 2;
+	reading.end_point_x = 3;
+	reading.end_point_y = 4;
+//	for(int i=0; i<path_size; ++i)
+//		reading.path[i] = i;
+
+
+	printf("EN_Labyrinth onRpcCall():\n");
+	printf("Solved: %d\n", reading.labyrinth_solved);
+	printf("Path Size: %i\n", reading.path_size);
+	printf("Start_pt: (%i, %i)\n", reading.start_point_x, reading.start_point_y);
+	printf("End_pt: (%i, %i)\n", reading.end_point_x, reading.end_point_y);
+
+	result_to_mrrocpp.write(reading);
+
+	rpcResult->raise();
+}
+
 void EN_Labyrinth::onNewImage()
 {
 	LOG(LTRACE) << "ImageLabyrinth_Processor::onNewImage\n";
@@ -160,6 +197,12 @@ void EN_Labyrinth::onNewImage()
 
 	Mat image = in_img.read();
 	boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
+
+	// TODO Delete this to continue with labyrinth solving
+	out_img.write(image);
+	newImage->raise();
+	return;
+	//
 
 	Mat out_calib;
 	// Calibration based on file, if file doesn't exist, don't calibrate
