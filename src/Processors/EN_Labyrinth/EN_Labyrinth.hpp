@@ -175,6 +175,7 @@ private:
 	// Matrices storing partial undistortion results.
 	//Mat map1, map2;
 	Mat labyrinth_first;
+	Mat first_image;
 	int k;
 	bool showImage;
 	bool showProcessed;
@@ -184,12 +185,18 @@ private:
 	int x2;
 	int y1;
 	int y2;
+	int min_x;
+	int max_x;
+	int min_y;
+	int max_y;
+	double rotation;
 	int segmentation_threshold;
 	int threshold;
 	int min_length;
 	int max_gap;
 	// Indicates if the file with calibration parameters was found
 	bool file_found;
+	bool first_image_saved;
 	bool labyrinth_found;
 	bool labyrinth_solved;
 	int path[];

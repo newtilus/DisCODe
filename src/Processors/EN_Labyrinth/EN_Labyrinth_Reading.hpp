@@ -1,6 +1,8 @@
 #ifndef EN_LABYRINTH_READING_HPP_
 #define EN_LABYRINTH_READING_HPP_
 
+#define MAX_PATH_SIZE 64
+
 #include "Mrrocpp_Proxy/Reading.hpp"
 
 namespace Types {
@@ -35,8 +37,8 @@ public:
 		start_point_y = o.start_point_y;
 		end_point_x = o.end_point_x;
 		end_point_y = o.end_point_y;
-//		for(int i=0; i<o.path_size; ++i)
-//			path[i] = o.path[i];
+		for(int i=0; i<o.path_size; ++i)
+			path[i] = o.path[i];
 	}
 
 	virtual ~EN_Labyrinth_Reading()
@@ -60,7 +62,7 @@ public:
 	int start_point_y;
 	int end_point_x;
 	int end_point_y;
-//	int path[];
+	int path[MAX_PATH_SIZE];
 
 	virtual void send(boost::shared_ptr<xdr_oarchive<> > & ar)
 	{
@@ -87,7 +89,7 @@ private:
 		ar & start_point_y;
 		ar & end_point_x;
 		ar & end_point_y;
-//		ar & path;
+		ar & path;
 	}
 };
 
